@@ -1,0 +1,74 @@
+{
+    "name": "docusaurus-plugin-docusynx",
+    "version": "0.1.0",
+    "description": "Export a deterministic Docusaurus document bundle for docusynx",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dieend/docusynx.git",
+        "directory": "packages/docusaurus-plugin-docusynx"
+    },
+    "homepage": "https://github.com/dieend/docusynx#readme",
+    "bugs": {
+        "url": "https://github.com/dieend/docusynx/issues"
+    },
+    "keywords": [
+        "confluence",
+        "docusaurus",
+        "documentation",
+        "wiki"
+    ],
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./schema": "./schema/document-bundle.schema.json"
+    },
+    "files": [
+        "dist",
+        "schema",
+        "README.md"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "peerDependencies": {
+        "@docusaurus/core": "^3.10.0"
+    },
+    "peerDependenciesMeta": {
+        "@docusaurus/core": {
+            "optional": true
+        }
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "dependencies": {
+        "cheerio": "1.0.0",
+        "domhandler": "5.0.3",
+        "gray-matter": "4.0.3",
+        "mdast-util-to-string": "4.0.0",
+        "remark-directive": "4.0.0",
+        "remark-frontmatter": "5.0.0",
+        "remark-gfm": "4.0.1",
+        "remark-mdx": "3.1.1",
+        "remark-parse": "11.0.0",
+        "unified": "11.0.5"
+    },
+    "devDependencies": {
+        "@types/node": "22.15.3",
+        "typescript": "5.8.3",
+        "vitest": "3.1.2"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "test": "vitest run",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    }
+}

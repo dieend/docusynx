@@ -1,0 +1,10 @@
+{
+  "name": "docusynx-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "pnpm --filter docusaurus-plugin-docusynx build",
+    "test": "pnpm --filter docusaurus-plugin-docusynx test",
+    "typecheck": "pnpm --filter docusaurus-plugin-docusynx typecheck"
+  }
+}

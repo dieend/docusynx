@@ -1,0 +1,234 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://docusynx.dev/schema/document-bundle-v1.json",
+    "title": "docusynx document bundle",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["schemaVersion", "site", "documents", "assets", "hash"],
+    "properties": {
+        "schemaVersion": { "const": 1 },
+        "site": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "baseUrl"],
+            "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "baseUrl": { "type": "string" },
+                "sourceBaseUrl": { "type": "string" },
+                "sourceCommit": { "type": "string" }
+            }
+        },
+        "documents": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/document" }
+        },
+        "assets": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/asset" }
+        },
+        "hash": { "$ref": "#/$defs/hash" }
+    },
+    "$defs": {
+        "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+                "path": { "type": "string", "minLength": 1 },
+                "url": { "type": "string" },
+                "commit": { "type": "string" }
+            }
+        },
+        "document": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "title",
+                "route",
+                "order",
+                "source",
+                "blocks",
+                "hash"
+            ],
+            "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "title": { "type": "string", "minLength": 1 },
+                "route": { "type": "string", "pattern": "^/" },
+                "parentId": { "type": "string", "minLength": 1 },
+                "order": { "type": "integer", "minimum": 0 },
+                "source": { "$ref": "#/$defs/source" },
+                "blocks": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/block" }
+                },
+                "hash": { "$ref": "#/$defs/hash" }
+            }
+        },
+        "asset": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "path", "mimeType", "hash"],
+            "properties": {
+                "id": { "$ref": "#/$defs/hash" },
+                "path": { "type": "string", "pattern": "^assets/" },
+                "mimeType": { "type": "string" },
+                "hash": { "$ref": "#/$defs/hash" }
+            }
+        },
+        "inline": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["type", "value"],
+                    "properties": {
+                        "type": { "const": "text" },
+                        "value": { "type": "string" },
+                        "marks": {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "enum": [
+                                    "bold",
+                                    "italic",
+                                    "strikethrough",
+                                    "code"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["type", "target", "children"],
+                    "properties": {
+                        "type": { "const": "link" },
+                        "target": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["kind", "value"],
+                            "properties": {
+                                "kind": { "enum": ["url", "document"] },
+                                "value": { "type": "string" }
+                            }
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/inline" }
+                        }
+                    }
+                }
+            ]
+        },
+        "block": {
+            "type": "object",
+            "required": ["type"],
+            "properties": { "type": { "type": "string" } },
+            "oneOf": [
+                {
+                    "properties": {
+                        "type": { "const": "paragraph" },
+                        "inlines": {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/inline" }
+                        }
+                    },
+                    "required": ["inlines"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "heading" },
+                        "level": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6
+                        },
+                        "inlines": {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/inline" }
+                        }
+                    },
+                    "required": ["level", "inlines"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "code" },
+                        "language": { "type": "string" },
+                        "title": { "type": "string" },
+                        "value": { "type": "string" }
+                    },
+                    "required": ["value"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "mermaid" },
+                        "value": { "type": "string" }
+                    },
+                    "required": ["value"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "list" },
+                        "ordered": { "type": "boolean" },
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": { "$ref": "#/$defs/block" }
+                            }
+                        }
+                    },
+                    "required": ["ordered", "items"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "table" },
+                        "header": { "$ref": "#/$defs/tableRows" },
+                        "rows": {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/tableRows" }
+                        }
+                    },
+                    "required": ["header", "rows"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "admonition" },
+                        "kind": { "type": "string" },
+                        "title": { "type": "string" },
+                        "blocks": {
+                            "type": "array",
+                            "items": { "$ref": "#/$defs/block" }
+                        }
+                    },
+                    "required": ["kind", "blocks"]
+                },
+                {
+                    "properties": {
+                        "type": { "const": "image" },
+                        "assetId": { "$ref": "#/$defs/hash" },
+                        "alt": { "type": "string" },
+                        "title": { "type": "string" }
+                    },
+                    "required": ["assetId"]
+                },
+                { "properties": { "type": { "const": "thematicBreak" } } },
+                {
+                    "properties": {
+                        "type": { "const": "extension" },
+                        "name": { "type": "string" },
+                        "data": {}
+                    },
+                    "required": ["name", "data"]
+                }
+            ]
+        },
+        "tableRows": {
+            "type": "array",
+            "items": { "type": "array", "items": { "$ref": "#/$defs/inline" } }
+        }
+    }
+}

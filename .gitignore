@@ -1,0 +1,8 @@
+node_modules/
+bazel-*
+packages/*/node_modules/
+packages/*/dist/
+!packages/docusaurus-plugin-docusynx/dist/
+!packages/docusaurus-plugin-docusynx/dist/**
+coverage/
+bin/

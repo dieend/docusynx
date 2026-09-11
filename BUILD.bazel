@@ -1,0 +1,129 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "docusaurus_plugin",
+    srcs = glob([
+        "packages/docusaurus-plugin-docusynx/dist/**/*",
+        "packages/docusaurus-plugin-docusynx/schema/**/*",
+    ]) + [
+        "packages/docusaurus-plugin-docusynx/README.md",
+        "packages/docusaurus-plugin-docusynx/package.json",
+    ],
+)
+
+go_library(
+    name = "bundle",
+    srcs = [
+        "pkg/bundle/bundle.go",
+        "pkg/bundle/validate_content.go",
+    ],
+    importpath = "github.com/dieend/docusynx/pkg/bundle",
+)
+
+go_test(
+    name = "bundle_test",
+    srcs = ["pkg/bundle/bundle_test.go"],
+    embed = [":bundle"],
+)
+
+go_library(
+    name = "target",
+    srcs = ["pkg/target/target.go"],
+    importpath = "github.com/dieend/docusynx/pkg/target",
+    deps = [":bundle"],
+)
+
+go_library(
+    name = "config",
+    srcs = ["pkg/config/config.go"],
+    importpath = "github.com/dieend/docusynx/pkg/config",
+    deps = ["@in_gopkg_yaml_v3//:yaml_v3"],
+)
+
+go_library(
+    name = "plan",
+    srcs = ["internal/plan/plan.go"],
+    importpath = "github.com/dieend/docusynx/internal/plan",
+    deps = [
+        ":bundle",
+        ":target",
+    ],
+)
+
+go_test(
+    name = "plan_test",
+    srcs = ["internal/plan/plan_test.go"],
+    embed = [":plan"],
+    deps = [
+        ":bundle",
+        ":target",
+    ],
+)
+
+go_library(
+    name = "engine",
+    srcs = ["internal/engine/engine.go"],
+    importpath = "github.com/dieend/docusynx/internal/engine",
+    deps = [
+        ":bundle",
+        ":plan",
+        ":target",
+    ],
+)
+
+go_library(
+    name = "confluence",
+    srcs = [
+        "targets/confluence/client.go",
+        "targets/confluence/render.go",
+    ],
+    importpath = "github.com/dieend/docusynx/targets/confluence",
+    deps = [
+        ":bundle",
+        ":target",
+    ],
+)
+
+go_test(
+    name = "confluence_test",
+    srcs = [
+        "targets/confluence/client_test.go",
+        "targets/confluence/live_acceptance_test.go",
+    ],
+    embed = [":confluence"],
+    deps = [
+        ":bundle",
+        ":engine",
+        ":target",
+    ],
+)
+
+go_library(
+    name = "docusynx_lib",
+    srcs = ["cmd/docusynx/main.go"],
+    importpath = "github.com/dieend/docusynx/cmd/docusynx",
+    deps = [
+        ":bundle",
+        ":config",
+        ":confluence",
+        ":engine",
+        ":plan",
+        ":target",
+    ],
+)
+
+go_binary(
+    name = "docusynx",
+    embed = [":docusynx_lib"],
+)
+
+test_suite(
+    name = "tests",
+    tests = [
+        ":bundle_test",
+        ":confluence_test",
+        ":plan_test",
+    ],
+)

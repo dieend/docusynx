@@ -1,0 +1,18 @@
+schemaVersion: 1
+
+targets:
+  confluence-production:
+    type: confluence-cloud
+    baseUrlEnv: DOCUSYNX_CONFLUENCE_BASE_URL
+    emailEnv: DOCUSYNX_CONFLUENCE_EMAIL
+    apiTokenEnv: DOCUSYNX_CONFLUENCE_API_TOKEN
+    spaceIdEnv: DOCUSYNX_CONFLUENCE_SPACE_ID
+    rootPageIdEnv: DOCUSYNX_CONFLUENCE_ROOT_PAGE_ID
+
+publications:
+  product-docs:
+    source:
+      bundle: ../build/docusynx/manifest.json
+    targetRefs:
+      - confluence-production
+    namespace: product-docs
