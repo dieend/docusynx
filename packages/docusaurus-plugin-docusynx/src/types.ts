@@ -72,10 +72,13 @@ export interface DocumentBundle {
     hash: string
 }
 
-export interface ComponentHandlerAssetInput {
-    path: string
-    mimeType?: string
-}
+export type ComponentHandlerAssetInput =
+    | { path: string; mimeType?: string }
+    | {
+          content: string | Uint8Array
+          extension: '.svg'
+          mimeType: 'image/svg+xml'
+      }
 
 export interface ComponentHandlerContext {
     readonly node: MdxAstNode

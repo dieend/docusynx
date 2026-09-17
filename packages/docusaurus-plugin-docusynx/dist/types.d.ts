@@ -98,10 +98,14 @@ export interface DocumentBundle {
     assets: BundleAsset[];
     hash: string;
 }
-export interface ComponentHandlerAssetInput {
+export type ComponentHandlerAssetInput = {
     path: string;
     mimeType?: string;
-}
+} | {
+    content: string | Uint8Array;
+    extension: '.svg';
+    mimeType: 'image/svg+xml';
+};
 export interface ComponentHandlerContext {
     readonly node: MdxAstNode;
     readonly props: Readonly<Record<string, unknown>>;

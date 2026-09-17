@@ -184,7 +184,9 @@ async function transformComponent(node, context) {
         siteDir: context.siteDir,
         sourcePath: context.sourcePath,
         readSiteFile: async (requestedPath) => readFile(resolveSitePath(context.siteDir, requestedPath), 'utf8'),
-        addAsset: async (input) => context.assets.add(resolveSitePath(context.siteDir, input.path), input.mimeType),
+        addAsset: async (input) => 'path' in input
+            ? context.assets.add(resolveSitePath(context.siteDir, input.path), input.mimeType)
+            : context.assets.addBytes(input.content, input.extension, input.mimeType),
         transformChildren: async () => transformBlockChildren(children, context),
     };
     const result = await handler.transform(handlerContext);

@@ -276,10 +276,16 @@ async function transformComponent(
         readSiteFile: async (requestedPath) =>
             readFile(resolveSitePath(context.siteDir, requestedPath), 'utf8'),
         addAsset: async (input) =>
-            context.assets.add(
-                resolveSitePath(context.siteDir, input.path),
-                input.mimeType
-            ),
+            'path' in input
+                ? context.assets.add(
+                      resolveSitePath(context.siteDir, input.path),
+                      input.mimeType
+                  )
+                : context.assets.addBytes(
+                      input.content,
+                      input.extension,
+                      input.mimeType
+                  ),
         transformChildren: async () =>
             transformBlockChildren(children, context),
     }
