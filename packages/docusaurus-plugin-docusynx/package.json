@@ -1,6 +1,6 @@
 {
     "name": "docusaurus-plugin-docusynx",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Export a deterministic Docusaurus document bundle for docusynx",
     "license": "Apache-2.0",
     "repository": {
@@ -35,7 +35,7 @@
         "README.md"
     ],
     "engines": {
-        "node": ">=20"
+        "node": ">=22.13"
     },
     "peerDependencies": {
         "@docusaurus/core": "^3.10.0"
@@ -50,25 +50,33 @@
         "registry": "https://registry.npmjs.org/"
     },
     "dependencies": {
+        "@excalidraw/utils": "0.1.5",
         "cheerio": "1.0.0",
+        "css-tree": "2.3.1",
         "domhandler": "5.0.3",
+        "dompurify": "3.4.15",
         "gray-matter": "4.0.3",
+        "jsdom": "26.1.0",
         "mdast-util-to-string": "4.0.0",
+        "mermaid": "11.17.2",
         "remark-directive": "4.0.0",
         "remark-frontmatter": "5.0.0",
         "remark-gfm": "4.0.1",
         "remark-mdx": "3.1.1",
         "remark-parse": "11.0.0",
+        "svgdom": "0.1.29",
         "unified": "11.0.5"
     },
     "devDependencies": {
+        "@types/jsdom": "21.1.7",
         "@types/node": "22.15.3",
+        "@types/svgdom": "0.1.2",
         "typescript": "5.8.3",
         "vitest": "3.1.2"
     },
     "scripts": {
         "build": "tsc -p tsconfig.build.json",
-        "test": "vitest run",
+        "test": "pnpm build && vitest run",
         "typecheck": "tsc -p tsconfig.json --noEmit"
     }
 }
