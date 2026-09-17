@@ -50,9 +50,12 @@ func (f *fakeConfluence) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	path := r.URL.Path
 	switch {
-	case r.Method == http.MethodGet && path == "/wiki/api/v2/spaces/space/pages":
+	case r.Method == http.MethodGet && path == "/wiki/api/v2/pages":
 		if r.URL.Query().Get("limit") != "250" {
 			f.t.Errorf("missing limit")
+		}
+		if r.URL.Query().Get("space-id") != "space" {
+			f.t.Errorf("missing space-id")
 		}
 		results := make([]page, 0, len(f.pages))
 		for _, p := range f.pages {
@@ -226,6 +229,55 @@ func (f *fakeConfluence) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		f.t.Errorf("unexpected request %s %s", r.Method, r.URL.String())
 		http.Error(w, "unexpected", http.StatusNotFound)
+	}
+}
+
+func TestDiscoverPreservesScopedGatewayPathDuringPagination(t *testing.T) {
+	requests := 0
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, password, ok := r.BasicAuth()
+		if !ok || user != "test@example.com" || password != "token" {
+			t.Error("bad auth")
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		if r.URL.Path != "/ex/confluence/cloud-id/wiki/api/v2/pages" {
+			t.Errorf("path=%q", r.URL.Path)
+			http.Error(w, "unexpected path", http.StatusNotFound)
+			return
+		}
+		if r.URL.Query().Get("space-id") != "space" || r.URL.Query().Get("limit") != "250" {
+			t.Errorf("query=%q", r.URL.RawQuery)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		requests++
+		next := ""
+		if requests == 1 {
+			next = "/wiki/api/v2/pages?space-id=space&limit=250&cursor=next"
+		}
+		if encodeErr := json.NewEncoder(w).Encode(map[string]any{
+			"results": []page{},
+			"_links":  map[string]string{"next": next},
+		}); encodeErr != nil {
+			t.Fatal(encodeErr)
+		}
+	}))
+	defer server.Close()
+
+	client, err := New(Options{
+		BaseURL:    server.URL + "/ex/confluence/cloud-id",
+		Email:      "test@example.com",
+		APIToken:   "token",
+		HTTPClient: server.Client(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, discoverErr := client.Discover(context.Background(), target.Scope{SpaceID: "space"}); discoverErr != nil {
+		t.Fatal(discoverErr)
+	}
+	if requests != 2 {
+		t.Fatalf("requests=%d, want 2", requests)
 	}
 }
 

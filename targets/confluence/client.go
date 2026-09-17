@@ -119,7 +119,10 @@ func New(options Options) (*Client, error) {
 }
 
 func (c *Client) Discover(ctx context.Context, scope target.Scope) ([]target.RemoteDocument, error) {
-	next := c.apiV2("/spaces/" + url.PathEscape(scope.SpaceID) + "/pages?limit=250")
+	query := url.Values{}
+	query.Set("limit", "250")
+	query.Set("space-id", scope.SpaceID)
+	next := c.apiV2("/pages?" + query.Encode())
 	all := map[string]page{}
 	for next != "" {
 		var response struct {
@@ -466,6 +469,10 @@ func (c *Client) nextURL(next string) (string, error) {
 		return "", err
 	}
 	if !u.IsAbs() {
+		basePath := strings.TrimSuffix(c.base.Path, "/")
+		if basePath != "" && strings.HasPrefix(u.Path, "/wiki/") {
+			u.Path = basePath + u.Path
+		}
 		u = c.base.ResolveReference(u)
 	}
 	if u.Scheme != c.base.Scheme || u.Host != c.base.Host {
