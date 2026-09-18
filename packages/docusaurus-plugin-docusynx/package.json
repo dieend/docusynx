@@ -1,6 +1,6 @@
 {
     "name": "docusaurus-plugin-docusynx",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "Export a deterministic Docusaurus document bundle for docusynx",
     "license": "Apache-2.0",
     "repository": {
@@ -38,10 +38,14 @@
         "node": ">=22.13"
     },
     "peerDependencies": {
-        "@docusaurus/core": "^3.10.0"
+        "@docusaurus/core": "^3.10.0",
+        "@excalidraw/utils": "0.1.5"
     },
     "peerDependenciesMeta": {
         "@docusaurus/core": {
+            "optional": true
+        },
+        "@excalidraw/utils": {
             "optional": true
         }
     },
@@ -50,7 +54,6 @@
         "registry": "https://registry.npmjs.org/"
     },
     "dependencies": {
-        "@excalidraw/utils": "0.1.5",
         "cheerio": "1.0.0",
         "css-tree": "2.3.1",
         "domhandler": "5.0.3",
@@ -68,6 +71,7 @@
         "unified": "11.0.5"
     },
     "devDependencies": {
+        "@excalidraw/utils": "0.1.5",
         "@types/jsdom": "21.1.7",
         "@types/node": "22.15.3",
         "@types/svgdom": "0.1.2",
