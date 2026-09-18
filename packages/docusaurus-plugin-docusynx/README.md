@@ -59,6 +59,10 @@ export default defineComponentHandler({
 The handler key is the exact `importSource` and `exportName`. An unknown imported
 MDX component stops the build. The plugin does not execute an unknown component.
 
+Mermaid rendering is included. Excalidraw rendering requires the optional
+`@excalidraw/utils@0.1.5` peer dependency. Install it only when the documentation
+contains an Excalidraw diagram that Docusynx must render.
+
 `sourcePathPrefix` changes site-relative paths into repository-relative paths.
 The `source_path` or `docusynx_source_path` frontmatter field overrides the path
 with an already repository-relative value. The prefix is not applied to an
