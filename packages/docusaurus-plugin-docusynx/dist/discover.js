@@ -1,6 +1,6 @@
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import matter from 'gray-matter';
+import matter from '@11ty/gray-matter';
 export async function discoverDocuments(input) {
     const documents = new Map();
     let nextOrder = 0;
