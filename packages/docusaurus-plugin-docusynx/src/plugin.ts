@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import matter from 'gray-matter'
+import matter from '@11ty/gray-matter'
 import { AssetCollector } from './assets.js'
 import { canonicalJson, contentHash } from './canonical.js'
 import {

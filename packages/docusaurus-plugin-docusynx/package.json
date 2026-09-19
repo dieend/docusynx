@@ -1,6 +1,6 @@
 {
     "name": "docusaurus-plugin-docusynx",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Export a deterministic Docusaurus document bundle for docusynx",
     "license": "Apache-2.0",
     "repository": {
@@ -54,11 +54,11 @@
         "registry": "https://registry.npmjs.org/"
     },
     "dependencies": {
+        "@11ty/gray-matter": "1.0.0",
         "cheerio": "1.0.0",
         "css-tree": "2.3.1",
         "domhandler": "5.0.3",
         "dompurify": "3.4.15",
-        "gray-matter": "4.0.3",
         "jsdom": "26.1.0",
         "mdast-util-to-string": "4.0.0",
         "mermaid": "11.17.2",
