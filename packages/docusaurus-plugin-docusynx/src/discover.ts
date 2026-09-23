@@ -124,7 +124,26 @@ export async function discoverDocuments(input: {
         )
             document.forceRendered = true
     }
+    applyRootDocument(documents, input.options.rootDocumentId)
     return [...documents.values()].sort(compareCandidate)
+}
+
+function applyRootDocument(
+    documents: Map<string, CandidateDocument>,
+    rootDocumentId: string | undefined
+): void {
+    if (!rootDocumentId) return
+    const rootDocument = documents.get(rootDocumentId)
+    if (!rootDocument)
+        throw new Error(`rootDocumentId ${rootDocumentId} does not exist`)
+    if (rootDocument.parentId)
+        throw new Error(
+            `rootDocumentId ${rootDocumentId} is not a top-level document`
+        )
+    for (const document of documents.values()) {
+        if (document.id !== rootDocumentId && !document.parentId)
+            document.parentId = rootDocumentId
+    }
 }
 
 async function candidateFromMetadata(

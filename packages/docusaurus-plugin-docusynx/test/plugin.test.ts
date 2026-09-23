@@ -18,6 +18,7 @@ describe('Docusaurus exporter', () => {
       {siteDir, siteConfig: {title: 'Example Docs', url: 'https://docs.example', baseUrl: '/product/'}},
       {
         siteName: 'example-docs',
+        rootDocumentId: 'page:index',
         sourceBaseUrl: 'https://git.example/example-docs',
         sourceCommit: 'abc123',
         sourcePathPrefix: 'src/product/docs',
@@ -51,6 +52,8 @@ describe('Docusaurus exporter', () => {
       'reference/starlark/globals/constants',
       'reference/starlark/globals/overview',
     ].sort());
+    expect(bundle.documents.find((document) => document.id === 'page:index')?.parentId).toBeUndefined();
+    expect(bundle.documents.find((document) => document.id === 'introduction')?.parentId).toBe('page:index');
     expect(bundle.documents.find((document) => document.id === 'reference/starlark')?.parentId).toBe('introduction');
     expect(bundle.documents.some((document) => document.id === 'category:docssidebar-globals')).toBe(false);
     expect(bundle.documents.find((document) => document.id === 'reference/starlark/globals/overview')).toMatchObject({
@@ -62,6 +65,7 @@ describe('Docusaurus exporter', () => {
     );
     const operationsCategory = bundle.documents.find((document) => document.id === 'category:docssidebar-operations');
     expect(operationsCategory).toMatchObject({
+      parentId: 'page:index',
       route: '/docs/category/operations/',
       source: {path: 'src/product/docs/.docusaurus/routes/docs/category/operations/index.html'},
     });
@@ -227,6 +231,19 @@ describe('Docusaurus exporter', () => {
       siteConfig: {title: 'Example Docs', url: 'https://docs.example', baseUrl: '/product/'},
     });
     expect(await readFile(manifestPath, 'utf8')).toBe(firstBytes);
+  });
+
+  it('fails when the configured root document does not exist', async () => {
+    const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), 'docusynx-missing-root-'));
+    const siteDir = path.join(temporaryDirectory, 'site');
+    await cp(fixtureDirectory, siteDir, {recursive: true});
+    const instance = plugin(
+      {siteDir, siteConfig: {title: 'Test'}},
+      {rootDocumentId: 'page:missing', strict: false},
+    );
+    instance.allContentLoaded({allContent: docusaurusContent()});
+    await expect(instance.postBuild({outDir: path.join(siteDir, 'build'), siteConfig: {title: 'Test'}}))
+      .rejects.toThrow(/rootDocumentId page:missing does not exist/);
   });
 
   it('fails on an unknown imported MDX component', async () => {

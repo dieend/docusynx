@@ -11,6 +11,7 @@ plugins: [
     require.resolve('docusaurus-plugin-docusynx'),
     {
       siteName: 'product-docs',
+      rootDocumentId: 'page:index',
       sourceBaseUrl: 'https://github.com/example/product-docs',
       sourceCommit: process.env.GITHUB_SHA,
       sourcePathPrefix: 'website',
@@ -33,6 +34,11 @@ plugins: [
   ],
 ]
 ```
+
+`rootDocumentId` makes one exported document the parent of every other
+top-level document. Use the Docusaurus home page identifier, `page:index`, to
+publish the complete site below one page while the sidebar hierarchy remains
+unchanged. The configured document must exist and must already be top-level.
 
 Normal Markdown and MDX documents use a structured source conversion. TypeScript
 pages and routes selected by `renderedRoutePatterns` use the rendered `<main>`

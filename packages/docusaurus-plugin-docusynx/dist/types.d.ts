@@ -127,6 +127,7 @@ export interface ComponentHandlerRegistration {
 export interface PluginOptions {
     siteName?: string;
     outputDirectory?: string;
+    rootDocumentId?: string;
     sourceBaseUrl?: string;
     sourceCommit?: string;
     sourcePathPrefix?: string;
