@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { parentPort, workerData } from 'node:worker_threads'
 import type { DOMWindow } from 'jsdom'
 import type { DiagramKind } from './diagrams.js'
-import { assertSafeSvg } from './svg.js'
+import { assertSafeSvg, prepareMermaidSvg } from './svg.js'
 
 interface DiagramWorkerData {
     kind: DiagramKind
@@ -53,7 +53,7 @@ async function renderMermaid(source: string): Promise<string> {
         theme: 'neutral',
     })
     const { svg } = await mermaid.render(`docusynx-${digest.slice(0, 16)}`, source)
-    return normalizeSvg(svg)
+    return normalizeSvg(prepareMermaidSvg(svg))
 }
 
 async function renderExcalidraw(source: string): Promise<string> {

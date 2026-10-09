@@ -15,6 +15,7 @@ import {
     type RenderedLinkSemantic,
 } from './html.js'
 import { loadComponentHandlers, markdownToBlocks } from './markdown.js'
+import { renderMermaidBlocks } from './mermaid.js'
 import type {
     Block,
     BundleDocument,
@@ -52,6 +53,13 @@ export default function docusynxPlugin(
     context: DocusaurusContext,
     options: PluginOptions = {}
 ): DocusaurusPluginInstance {
+    if (
+        options.mermaidFormat !== undefined &&
+        options.mermaidFormat !== 'source' &&
+        options.mermaidFormat !== 'svg'
+    ) {
+        throw new Error('mermaidFormat must be "source" or "svg"')
+    }
     let allContent: unknown = {}
     return {
         name: 'docusaurus-plugin-docusynx',
@@ -67,6 +75,7 @@ export default function docusynxPlugin(
             )
             await mkdir(outputDirectory, { recursive: true })
             const assets = new AssetCollector(outputDirectory)
+            const mermaidAssets = new Map<string, string>()
             const handlers = await loadComponentHandlers(
                 options.componentHandlers ?? []
             )
@@ -152,6 +161,21 @@ export default function docusynxPlugin(
                         )
                     title = rendered.title ?? title
                     blocks = rendered.blocks
+                }
+                if (options.mermaidFormat === 'svg') {
+                    try {
+                        blocks = await renderMermaidBlocks(
+                            blocks,
+                            assets,
+                            mermaidAssets,
+                            title
+                        )
+                    } catch (error) {
+                        throw new Error(
+                            `failed to render Mermaid diagram in ${candidate.sourcePath}`,
+                            { cause: error }
+                        )
+                    }
                 }
                 const mappedSourcePath = sourcePathMapping(
                     candidate.route,

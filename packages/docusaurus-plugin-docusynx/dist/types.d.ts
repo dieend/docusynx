@@ -137,6 +137,8 @@ export interface PluginOptions {
         sourcePath: string;
     }>;
     strict?: boolean;
+    /** Export Mermaid blocks as source (default) or SVG image assets. */
+    mermaidFormat?: 'source' | 'svg';
     componentHandlers?: ComponentHandlerRegistration[];
     renderedRoutePatterns?: string[];
     excludeRoutePatterns?: string[];
