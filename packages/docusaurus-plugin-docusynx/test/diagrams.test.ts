@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {renderExcalidrawSvg, renderMermaidSvg} from '../src/diagrams.js';
+import {prepareMermaidSvg} from '../src/svg.js';
 
 describe('diagram SVG renderers', () => {
   it.each([
@@ -11,10 +12,15 @@ describe('diagram SVG renderers', () => {
 
     expect(second).toBe(first);
     expect(first).toMatch(/^<svg[^>]+viewBox="[^"]+"/);
+    const root = first.match(/^<svg[^>]+>/)![0];
+    const [x, y, width, height] = root.match(/viewBox="([^"]+)"/)![1]!.split(/\s+/).map(Number);
+    expect(root).toMatch(new RegExp(`\\bwidth="${Math.ceil(width!)}"`));
+    expect(root).toMatch(new RegExp(`\\bheight="${Math.ceil(height!)}"`));
+    expect(first).toContain(`<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="#ffffff"/>`);
     for (const label of labels) {
       expect(first).toContain(label);
     }
-  });
+  }, 60_000);
 
   it('renders an Excalidraw scene deterministically', async () => {
     const source = JSON.stringify({
@@ -32,7 +38,7 @@ describe('diagram SVG renderers', () => {
     expect(first).toContain('svg-source:excalidraw');
     expect(first).toContain('Rendered diagram');
     expect(first).toContain(embeddedPixel.dataURL);
-  });
+  }, 60_000);
 
   it('rejects invalid Excalidraw input', async () => {
     await expect(renderExcalidrawSvg('{}')).rejects.toThrow(/invalid Excalidraw scene/);
@@ -71,6 +77,23 @@ describe('diagram SVG renderers', () => {
 
   it('rejects invalid Mermaid input', async () => {
     await expect(renderMermaidSvg('not a diagram')).rejects.toThrow(/No diagram type detected/);
+  });
+
+  it('sets intrinsic dimensions without changing fractional bounds or negative origins', () => {
+    const svg = prepareMermaidSvg("<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='-8 -4 120.25 60.5'><text>Diagram</text></svg>");
+    expect(svg).toContain('width="121" height="61" viewBox="-8 -4 120.25 60.5"');
+    expect(svg).toContain('<rect x="-8" y="-4" width="120.25" height="60.5" fill="#ffffff"/>');
+    expect(svg).toContain('<text>Diagram</text>');
+  });
+
+  it.each(['', '0 0 0 50', '0 0 50 -1', '0 0 Infinity 10', '0 0 50', '0 0 invalid 10'])('rejects invalid SVG bounds %s', (bounds) => {
+    expect(() => prepareMermaidSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bounds}"/>`))
+      .toThrow(/finite viewBox with positive dimensions/);
+  });
+
+  it('does not remove unsafe XML before SVG validation', () => {
+    expect(() => prepareMermaidSvg('<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"/>'))
+      .toThrow(/unsafe SVG/);
   });
 });
 

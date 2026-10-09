@@ -6,7 +6,13 @@ import { canonicalJson, contentHash } from './canonical.js';
 import { discoverDocuments, matchesRoutePattern, normalizeRoute, readRenderedRoute, } from './discover.js';
 import { renderedHtmlLinkSemantics, renderedHtmlToBlocks, } from './html.js';
 import { loadComponentHandlers, markdownToBlocks } from './markdown.js';
+import { renderMermaidBlocks } from './mermaid.js';
 export default function docusynxPlugin(context, options = {}) {
+    if (options.mermaidFormat !== undefined &&
+        options.mermaidFormat !== 'source' &&
+        options.mermaidFormat !== 'svg') {
+        throw new Error('mermaidFormat must be "source" or "svg"');
+    }
     let allContent = {};
     return {
         name: 'docusaurus-plugin-docusynx',
@@ -19,6 +25,7 @@ export default function docusynxPlugin(context, options = {}) {
             const outputDirectory = path.resolve(outDir, options.outputDirectory ?? 'docusynx');
             await mkdir(outputDirectory, { recursive: true });
             const assets = new AssetCollector(outputDirectory);
+            const mermaidAssets = new Map();
             const handlers = await loadComponentHandlers(options.componentHandlers ?? []);
             const candidates = await discoverDocuments({
                 allContent,
@@ -89,6 +96,14 @@ export default function docusynxPlugin(context, options = {}) {
                         throw new Error(`no rendered HTML found for route ${candidate.route}`);
                     title = rendered.title ?? title;
                     blocks = rendered.blocks;
+                }
+                if (options.mermaidFormat === 'svg') {
+                    try {
+                        blocks = await renderMermaidBlocks(blocks, assets, mermaidAssets, title);
+                    }
+                    catch (error) {
+                        throw new Error(`failed to render Mermaid diagram in ${candidate.sourcePath}`, { cause: error });
+                    }
                 }
                 const mappedSourcePath = sourcePathMapping(candidate.route, options.sourcePathMappings ?? []);
                 const sourcePath = mappedSourcePath ??

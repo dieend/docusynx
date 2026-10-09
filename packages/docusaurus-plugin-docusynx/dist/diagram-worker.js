@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { parentPort, workerData } from 'node:worker_threads';
-import { assertSafeSvg } from './svg.js';
+import { assertSafeSvg, prepareMermaidSvg } from './svg.js';
 const input = workerData;
 async function renderMermaid(source) {
     const [{ createHTMLWindow }, { default: createDOMPurify }, { JSDOM }] = await Promise.all([
@@ -30,7 +30,7 @@ async function renderMermaid(source) {
         theme: 'neutral',
     });
     const { svg } = await mermaid.render(`docusynx-${digest.slice(0, 16)}`, source);
-    return normalizeSvg(svg);
+    return normalizeSvg(prepareMermaidSvg(svg));
 }
 async function renderExcalidraw(source) {
     const { JSDOM } = await import('jsdom');

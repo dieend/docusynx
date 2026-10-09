@@ -23,6 +23,7 @@ plugins: [
         },
       ],
       strict: true,
+      mermaidFormat: 'svg',
       componentHandlers: [
         {
           importSource: '@site/src/components/ComposeBlock',
@@ -65,7 +66,21 @@ export default defineComponentHandler({
 The handler key is the exact `importSource` and `exportName`. An unknown imported
 MDX component stops the build. The plugin does not execute an unknown component.
 
-Mermaid rendering is included. Excalidraw rendering requires the optional
+Set `mermaidFormat: 'svg'` to export Mermaid code blocks as SVG image assets.
+This option also applies to Mermaid blocks inside lists and admonitions, and
+to Mermaid code blocks from rendered routes. It does not change the Docusaurus
+site output. The default, `mermaidFormat: 'source'`, keeps Mermaid source blocks
+in the bundle.
+
+SVG export uses the included Mermaid renderer. The SVG has numeric width and
+height attributes and a white background. Identical Mermaid source shares one
+asset across documents. Invalid diagrams stop the build. Confluence publishes
+these assets as images; no Mermaid macro or Confluence app is required.
+
+An already-rendered diagram in route HTML remains an image. Docusynx cannot
+recover Mermaid source from that image.
+
+Excalidraw rendering requires the optional
 `@excalidraw/utils@0.1.5` peer dependency. Install it only when the documentation
 contains an Excalidraw diagram that Docusynx must render.
 

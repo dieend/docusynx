@@ -34,6 +34,33 @@ const externalCssFunctions = new Set(['cross-fade', '-webkit-cross-fade', 'image
 const unsafeSvgElements = new Set(['animate', 'animatecolor', 'animatemotion', 'animatetransform', 'foreignobject', 'script', 'set']);
 const xmlDeclaration = /^\s*<\?xml\s+version\s*=\s*(?:"1\.0"|'1\.0')(?:\s+encoding\s*=\s*(?:"[Uu][Tt][Ff]-8"|'[Uu][Tt][Ff]-8'))?(?:\s+standalone\s*=\s*(?:"(?:yes|no)"|'(?:yes|no)'))?\s*\?>/;
 
+/** Give image consumers intrinsic dimensions and an opaque diagram background. */
+export function prepareMermaidSvg(svg: string): string {
+  assertSafeSvg(svg);
+  const dom = new JSDOM(svg, {contentType: 'image/svg+xml'});
+  try {
+    const root = dom.window.document.documentElement;
+    const bounds = root.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
+    if (root.localName !== 'svg' || !bounds || bounds.length !== 4 ||
+        !bounds.every(Number.isFinite) || bounds[2]! <= 0 || bounds[3]! <= 0) {
+      throw new Error('Mermaid SVG must have a finite viewBox with positive dimensions');
+    }
+    const [x, y, width, height] = bounds as [number, number, number, number];
+    root.setAttribute('width', String(Math.ceil(width)));
+    root.setAttribute('height', String(Math.ceil(height)));
+    const background = dom.window.document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('x', String(x));
+    background.setAttribute('y', String(y));
+    background.setAttribute('width', String(width));
+    background.setAttribute('height', String(height));
+    background.setAttribute('fill', '#ffffff');
+    root.insertBefore(background, root.firstChild);
+    return root.outerHTML;
+  } finally {
+    dom.window.close();
+  }
+}
+
 export function assertSafeSvg(svg: string): void {
   if (/<!doctype\b/i.test(svg)) {
     throw unsafe('document type declaration');
